@@ -1,0 +1,36 @@
+/* Subtitle overlay styles — injected into the Google Meet page */
+
+#live-translator-overlay {
+  position: fixed;
+  bottom: 80px; /* Sits above Meet's control bar */
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 80%;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-family: 'Google Sans', Arial, sans-serif;
+  text-align: center;
+  z-index: 99999; /* Always on top of Meet's UI */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none; /* Clicks pass through to Meet underneath */
+}
+
+#live-translator-overlay.visible {
+  opacity: 1;
+}
+
+.speaker-label {
+  color: #4fc3f7;
+  font-weight: bold;
+  margin-right: 6px;
+}
+
+#live-translator-text {
+  margin: 0;
+  padding: 0;
+  line-height: 1.4;
+}
