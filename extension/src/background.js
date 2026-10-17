@@ -25,7 +25,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ status: 'started' });
   }
   if (message.type === 'STOP_TRANSLATION') { stopTranslation(); sendResponse({ status: 'stopped' }); }
-  if (message.type === 'GET_STATUS') { sendResponse({ isTranslating }); }
+  if (message.type === 'GET_STATUS') {
+    sendResponse({ 
+    isTranslating,
+    sourceLang: currentSourceLang,
+    targetLang: currentTargetLang
+    });
+  }
   return true;
 });
 

@@ -27,6 +27,8 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (response && response.isTranslating) {
       setActiveState();
     }
+    if (response && response.sourceLang) sourceLang.value = response.sourceLang;
+    if (response && response.targetLang) targetLang.value = response.targetLang;
   });
 });
 
