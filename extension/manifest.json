@@ -7,7 +7,8 @@
   "permissions": [
     "activeTab",
     "scripting",
-    "tabCapture"
+    "tabCapture",
+    "tabs"
   ],
 
   "host_permissions": [
@@ -17,14 +18,6 @@
   "background": {
     "service_worker": "src/background.js"
   },
-
-  "content_scripts": [
-    {
-      "matches": ["https://meet.google.com/*"],
-      "js": ["src/content.js"],
-      "css": ["src/overlay.css"]
-    }
-  ],
 
   "action": {
     "default_popup": "src/popup.html",
