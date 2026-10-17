@@ -1,36 +1,66 @@
-/* Subtitle overlay styles — injected into the Google Meet page */
-
+/* ── Subtitle overlay (bottom center) ───────────────────── */
 #live-translator-overlay {
   position: fixed;
-  bottom: 80px; /* Sits above Meet's control bar */
+  bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 80%;
-  background-color: rgba(0, 0, 0, 0.75);
-  color: #ffffff;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 18px;
+  width: 720px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 99999;
+  pointer-events: none;
   font-family: 'Google Sans', Arial, sans-serif;
-  text-align: center;
-  z-index: 99999; /* Always on top of Meet's UI */
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none; /* Clicks pass through to Meet underneath */
 }
 
-#live-translator-overlay.visible {
-  opacity: 1;
-}
-
-.speaker-label {
-  color: #4fc3f7;
-  font-weight: bold;
-  margin-right: 6px;
-}
-
-#live-translator-text {
-  margin: 0;
-  padding: 0;
+.lt-subtitle {
+  background: rgba(0, 0, 0, 0.82);
+  color: #ffffff;
+  font-size: 20px;
   line-height: 1.4;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-align: center;
+  max-width: 100%;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  animation: lt-slide-in 0.25s ease;
+}
+
+.lt-subtitle.lt-fading {
+  opacity: 0;
+}
+
+@keyframes lt-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Transcript panel (top-right corner) ────────────────── */
+#live-translator-transcript {
+  position: fixed;
+  top: 70px;
+  right: 16px;
+  width: 300px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 8px;
+  padding: 8px 12px;
+  z-index: 99999;
+  pointer-events: none;
+  font-family: 'Google Sans', Arial, sans-serif;
+}
+
+#live-translator-transcript p {
+  margin: 0 0 4px 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+#live-translator-transcript p.lt-current {
+  color: rgba(255, 255, 255, 0.9);
 }

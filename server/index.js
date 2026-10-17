@@ -83,7 +83,7 @@ wss.on('connection', (ws, req) => {
     `?model=${model_name}`,
     `&encoding=linear16`,
     `&sample_rate=16000`,
-    `&eot_threshold=0.7`
+    `&eot_threshold=0.5`  // lower = faster end of turn (was 0.7)
   ].join('');
 
   console.log('Connecting to Deepgram:', dgUrl);
@@ -109,15 +109,19 @@ wss.on('connection', (ws, req) => {
     try {
       const data = JSON.parse(rawData.toString());
       if (data.type !== 'TurnInfo') return;
-
       const { event, transcript, turn_index, end_of_turn_confidence } = data;
       if (!transcript || transcript.trim() === '') return;
-
       console.log(`[Turn ${turn_index}] ${event} (eot: ${end_of_turn_confidence?.toFixed(2)}): ${transcript}`);
+
+      if (event === 'Update' || event === 'StartOfTurn') {
+        // Raw transcript — shown in the transcript panel, not the subtitle overlay
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'TRANSCRIPT', text: transcript }));
+        }
+      }
 
       if (event === 'EndOfTurn') {
         let outputText = transcript;
-
         if (sourceLang !== targetLang) {
           try {
             outputText = await translate(transcript, sourceLang, targetLang);
@@ -127,19 +131,12 @@ wss.on('connection', (ws, req) => {
             outputText = transcript;
           }
         }
-
         if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({
-            type: 'TRANSLATION',
-            text: outputText,
-            sourceLang,
-            targetLang
-          }));
+          // Final translation — goes into the subtitle queue
+          ws.send(JSON.stringify({ type: 'TRANSLATION', text: outputText }));
         }
       }
-    } catch (err) {
-      console.error('Processing error:', err.message);
-    }
+    } catch (err) { console.error('Processing error:', err.message); }
   });
 
   dgSocket.on('close', (code) => { console.log(`Deepgram closed: ${code}`); });
