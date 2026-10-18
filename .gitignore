@@ -18,3 +18,6 @@ npm-debug.log*
 # Build output
 dist/
 build/
+
+server/.env
+node_modules/

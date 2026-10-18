@@ -39,6 +39,22 @@ swapBtn.addEventListener('click', () => {
   targetLang.value = temp;
 });
 
+// Auto-switch languages when dropdowns change (while translating)
+function onLangChange() {
+  if (!isTranslating) return; // only act if already running
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    chrome.runtime.sendMessage({
+      type: 'START_TRANSLATION',
+      tabId: tabs[0].id,
+      sourceLang: sourceLang.value,
+      targetLang: targetLang.value
+    });
+  });
+}
+
+sourceLang.addEventListener('change', onLangChange);
+targetLang.addEventListener('change', onLangChange);
+
 // Start or stop translation
 mainBtn.addEventListener('click', () => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

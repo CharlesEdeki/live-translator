@@ -50,20 +50,29 @@ chrome.runtime.onConnect.addListener((port) => {
 function openSocket(tabId, sourceLang, targetLang) {
   if (socket) { socket.close(); socket = null; }
   socket = new WebSocket(`${SERVER_URL}?sourceLang=${sourceLang}&targetLang=${targetLang}`);
-  socket.onopen = () => console.log(`WebSocket open: ${sourceLang} → ${targetLang}`);
+  socket.onopen = () => {
+    isTranslating = true; // ← ensure it stays true when new socket opens
+    console.log(`WebSocket open: ${sourceLang} → ${targetLang}`);
+  };
   socket.onmessage = (event) => {
     try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'TRANSLATION') {
-        chrome.tabs.sendMessage(tabId, { type: 'SHOW_SUBTITLE', text: data.text });
-        chrome.tabs.sendMessage(tabId, { type: 'COMMIT_TRANSCRIPT' });
-        } else if (data.type === 'TRANSCRIPT') {
-        chrome.tabs.sendMessage(tabId, { type: 'SHOW_TRANSCRIPT', text: data.text });
+      const data = JSON.parse(event.data);
+      if (data.type === 'TRANSLATION') {
+        chrome.tabs.sendMessage(tabId, { type: 'SHOW_SUBTITLE', text: data.text, live: data.live });
+        if (!data.live) {
+            chrome.tabs.sendMessage(tabId, { type: 'COMMIT_TRANSCRIPT' });
         }
+      } else if (data.type === 'TRANSCRIPT') {
+        chrome.tabs.sendMessage(tabId, { type: 'SHOW_TRANSCRIPT', text: data.text });
+      }
     } catch (err) { console.error('Failed to parse server message:', err); }
   };
   socket.onerror = (err) => { console.error('WebSocket error:', err); stopTranslation(); };
-  socket.onclose = () => { console.log('WebSocket closed'); isTranslating = false; };
+  socket.onclose = () => {
+    console.log('WebSocket closed');
+    // Only mark as not translating if we didn't immediately open a new socket
+    if (!socket) isTranslating = false;
+  };
 }
 
 function reconnectSocket(tabId, sourceLang, targetLang) {

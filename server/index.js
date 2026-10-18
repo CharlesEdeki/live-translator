@@ -113,10 +113,19 @@ wss.on('connection', (ws, req) => {
       if (!transcript || transcript.trim() === '') return;
       console.log(`[Turn ${turn_index}] ${event} (eot: ${end_of_turn_confidence?.toFixed(2)}): ${transcript}`);
 
-      if (event === 'Update' || event === 'StartOfTurn') {
-        // Raw transcript — shown in the transcript panel, not the subtitle overlay
+      if (event === 'StartOfTurn' || event === 'Update') {
+        // Translate incrementally — show live translated subtitle
+        let outputText = transcript;
+        if (sourceLang !== targetLang) {
+          try {
+            outputText = await translate(transcript, sourceLang, targetLang);
+          } catch (err) {
+            outputText = transcript; // fall back to raw if translation fails
+          }
+        }
         if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: 'TRANSCRIPT', text: transcript }));
+          // LIVE = true means "replace current subtitle, don't stack yet"
+          ws.send(JSON.stringify({ type: 'TRANSLATION', text: outputText, live: true }));
         }
       }
 
@@ -125,15 +134,14 @@ wss.on('connection', (ws, req) => {
         if (sourceLang !== targetLang) {
           try {
             outputText = await translate(transcript, sourceLang, targetLang);
-            console.log(`Translation: ${outputText}`);
+            console.log(`Final translation: ${outputText}`);
           } catch (err) {
-            console.error('Translation error:', err.message);
             outputText = transcript;
           }
         }
         if (ws.readyState === WebSocket.OPEN) {
-          // Final translation — goes into the subtitle queue
-          ws.send(JSON.stringify({ type: 'TRANSLATION', text: outputText }));
+          // LIVE = false means "commit this to the queue and start fresh"
+          ws.send(JSON.stringify({ type: 'TRANSLATION', text: outputText, live: false }));
         }
       }
     } catch (err) { console.error('Processing error:', err.message); }

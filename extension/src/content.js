@@ -3,6 +3,7 @@
   window._liveTranslatorLoaded = true;
 
   let port = null;
+  let liveSubtitleEl = null;
   const SUBTITLE_LIFETIME = 6000; // ms each subtitle stays on screen
 
   // ── Subtitle queue ──────────────────────────────────────
@@ -19,37 +20,47 @@
     document.body.appendChild(tr);
   }
 
-  function showSubtitle(text) {
+
+  function showSubtitle(text, live) {
     const overlay = document.getElementById('live-translator-overlay');
     if (!overlay) return;
 
-    // Create new subtitle element
-    const el = document.createElement('div');
-    el.className = 'lt-subtitle';
-    el.textContent = text;
-    overlay.appendChild(el);
+    if (live) {
+      // Update or create the live subtitle in place (no queue entry yet)
+      if (!liveSubtitleEl || !liveSubtitleEl.parentNode) {
+        liveSubtitleEl = document.createElement('div');
+        liveSubtitleEl.className = 'lt-subtitle lt-live-sub';
+        overlay.appendChild(liveSubtitleEl);
+      }
+      liveSubtitleEl.textContent = text;
+    } else {
+      // EndOfTurn — remove live element, push final to queue
+      if (liveSubtitleEl && liveSubtitleEl.parentNode) {
+        liveSubtitleEl.parentNode.removeChild(liveSubtitleEl);
+        liveSubtitleEl = null;
+      }
+      const el = document.createElement('div');
+      el.className = 'lt-subtitle';
+      el.textContent = text;
+      overlay.appendChild(el);
 
-    // Schedule fade-out and removal
-    const fadeTimer = setTimeout(() => {
-      el.classList.add('lt-fading');
-      setTimeout(() => {
-        if (el.parentNode) el.parentNode.removeChild(el);
-        // Remove from queue tracking
-        const idx = subtitleQueue.findIndex(s => s.el === el);
-        if (idx !== -1) subtitleQueue.splice(idx, 1);
-      }, 500); // matches CSS transition duration
-    }, SUBTITLE_LIFETIME);
+      const fadeTimer = setTimeout(() => {
+        el.classList.add('lt-fading');
+        setTimeout(() => {
+          if (el.parentNode) el.parentNode.removeChild(el);
+          const idx = subtitleQueue.findIndex(s => s.el === el);
+          if (idx !== -1) subtitleQueue.splice(idx, 1);
+        }, 500);
+      }, SUBTITLE_LIFETIME);
 
-    subtitleQueue.push({ el, timer: fadeTimer });
+      subtitleQueue.push({ el, timer: fadeTimer });
 
-    // Keep at most 3 subtitles visible — evict oldest if needed
-    if (subtitleQueue.length > 3) {
-      const oldest = subtitleQueue.shift();
-      clearTimeout(oldest.timer);
-      oldest.el.classList.add('lt-fading');
-      setTimeout(() => {
-        if (oldest.el.parentNode) oldest.el.parentNode.removeChild(oldest.el);
-      }, 500);
+      if (subtitleQueue.length > 3) {
+        const oldest = subtitleQueue.shift();
+        clearTimeout(oldest.timer);
+        oldest.el.classList.add('lt-fading');
+        setTimeout(() => { if (oldest.el.parentNode) oldest.el.parentNode.removeChild(oldest.el); }, 500);
+      }
     }
   }
 
@@ -167,7 +178,7 @@
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'START_AUDIO_CAPTURE') startAudioCapture();
     if (message.type === 'STOP_AUDIO_CAPTURE') stopAudioCapture();
-    if (message.type === 'SHOW_SUBTITLE') showSubtitle(message.text);   // final translation
+    if (message.type === 'SHOW_SUBTITLE') showSubtitle(message.text, message.live);   // final translation
     if (message.type === 'SHOW_TRANSCRIPT') {                           // live STT
       showTranscript(message.text);
     }
