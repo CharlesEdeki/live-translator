@@ -1,4 +1,4 @@
-const SERVER_URL = 'live-translator-production-fd06.up.railway.app';
+const SERVER_URL = 'wss://live-translator-production-fd06.up.railway.app';
 let socket = null;
 let isTranslating = false;
 let activePort = null;
