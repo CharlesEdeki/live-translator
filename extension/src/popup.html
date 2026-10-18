@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Translator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 280px;
+      padding: 16px;
+      font-family: 'Google Sans', Arial, sans-serif;
+      background: #1a1a2e;
+      color: #ffffff;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ef4444;
+      margin-left: auto;
+    }
+
+    .status-dot.active {
+      background: #22c55e;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .language-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    select {
+      flex: 1;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #ffffff;
+      font-size: 13px;
+    }
+
+    .swap-btn {
+      background: none;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .swap-btn:hover {
+      background: #334155;
+    }
+
+    .main-btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #3b82f6;
+      color: white;
+      transition: background 0.2s;
+    }
+
+    .main-btn:hover {
+      background: #2563eb;
+    }
+
+    .main-btn.stop {
+      background: #ef4444;
+    }
+
+    .main-btn.stop:hover {
+      background: #dc2626;
+    }
+
+    .status-text {
+      text-align: center;
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 10px;
+    }
+
+    .not-meet {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+      padding: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌍 Live Translator</h1>
+    <div class="status-dot" id="statusDot"></div>
+  </div>
+
+  <div id="mainContent">
+    <div class="language-row">
+      <select id="sourceLang">
+        <option value="fr">French</option>
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="de">German</option>
+        <option value="zh">Chinese</option>
+        <option value="ar">Arabic</option>
+      </select>
+
+      <button class="swap-btn" id="swapBtn">⇄</button>
+
+      <select id="targetLang">
+        <option value="en">English</option>
+        <option value="fr">French</option>
+        <option value="es">Spanish</option>
+        <option value="de">German</option>
+        <option value="zh">Chinese</option>
+        <option value="ar">Arabic</option>
+      </select>
+    </div>
+
+    <button class="main-btn" id="mainBtn">Start Translation</button>
+    <p class="status-text" id="statusText">Ready</p>
+  </div>
+
+  <div id="notMeet" class="not-meet" style="display:none;">
+    <p>⚠️ Open a Google Meet call to use Live Translator.</p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
